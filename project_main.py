@@ -9,9 +9,11 @@ from PySide6.QtWidgets import (
     QToolBar,
     QFileDialog,
     QVBoxLayout,
-    QHBoxLayout
+    QHBoxLayout,
+    QPushButton,
 )
 from PySide6.QtGui import QPixmap
+from PySide6.QtCore import Qt
 
 
 class Window(QMainWindow):
@@ -23,12 +25,14 @@ class Window(QMainWindow):
         self.dict_of_menu_options = {}
         self.dict_of_toolbar_options={}
         self.image_label = QLabel("No Image Loaded")
+        self.scale_factor = 1.0
 
         self.setWindowTitle("QMainWindow")
 
         self.load_image()
         self.add_load_image_to_menu()
-        #$self.display_image()
+
+        self.create_zoom_buttons()
 
         self.create_menuBar()
 
@@ -77,19 +81,39 @@ class Window(QMainWindow):
         file_dialog.setNameFilter("Images (*.png *.jpg *.bmp)")
         file_dialog.setViewMode(QFileDialog.Detail)
         file_dialog.setFileMode(QFileDialog.ExistingFile)
-        
+
         if file_dialog.exec_():
             selected_file = file_dialog.selectedFiles()[0]
             pixmap = QPixmap(selected_file)
             if not pixmap.isNull():
-                self.image_label.setPixmap(pixmap)
-                self.image_label.setScaledContents(True)
-                self.image_label.resize(pixmap.width(), pixmap.height())
+                self.original_pixmap = pixmap
+                self.update_image()
             else:
                 self.image_label.setText("Invalid Image")
 
-    # def display_image(self):
-    #     pass
+    def update_image(self):
+        scaled_width = int(self.original_pixmap.width() * self.scale_factor)
+        #scaled_height = int(self.original_pixmap.height() * self.scale_factor)
+        scaled_pixmap = self.original_pixmap.scaledToWidth(scaled_width)
+        self.image_label.setPixmap(scaled_pixmap)
+
+    def zoom_in(self):
+        self.scale_factor *= 1.1
+        self.update_image()
+
+    def zoom_out(self):
+        self.scale_factor *= 0.9
+        self.update_image()
+    
+    
+    def create_zoom_buttons(self):
+        zoom_in_button = QPushButton("Zoom In")
+        zoom_in_button.clicked.connect(self.zoom_in)
+        self.dict_of_toolbar_options["Zoom In"] = self.zoom_in
+        
+        zoom_out_button = QPushButton("Zoom Out")
+        zoom_out_button.clicked.connect(self.zoom_out)
+        self.dict_of_toolbar_options["Zoom Out"] = self.zoom_out
 
 
 if __name__ == "__main__":
