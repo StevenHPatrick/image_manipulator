@@ -105,7 +105,7 @@ class Window(QMainWindow):
         file_dialog.setViewMode(QFileDialog.Detail)
         file_dialog.setFileMode(QFileDialog.ExistingFile)
 
-        if file_dialog.exec_():
+        if file_dialog.exec():
             selected_file = file_dialog.selectedFiles()[0]
             pixmap = QPixmap(selected_file)
             if not pixmap.isNull():
