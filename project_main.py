@@ -42,7 +42,7 @@ class Window(QMainWindow):
         self.createToolBar()
 
         #Can change this to tell you which tool you have selected? Currently does nothing important
-        self._createStatusBar()
+        self.createStatusBar()
 
         # Create a central widget and set the layout on it
         self.central_widget = QWidget()
@@ -70,13 +70,20 @@ class Window(QMainWindow):
             tools.addAction(item, function)
         self.addToolBar(tools)
 
-    def _createStatusBar(self):
+    def createStatusBar(self):
         """
-        Currently does nothing.
+        Creates the status bar
         """
-        status = QStatusBar()
-        status.showMessage("I'm the Status Bar")
-        self.setStatusBar(status)
+        self.status = QStatusBar()
+        self.update_status("Hello!")
+        
+
+    def update_status(self, message):
+        """
+        A helper function to update the status bar for various functions
+        """
+        self.status.showMessage(message)
+        self.setStatusBar(self.status)
 
     def create_menu_tool(self, tool, function):
         """
@@ -111,6 +118,7 @@ class Window(QMainWindow):
             if not pixmap.isNull():
                 self.original_pixmap = pixmap
                 self.update_image()
+                self.update_status("Opened " + selected_file)
             else:
                 self.image_label.setText("Invalid Image")
 
