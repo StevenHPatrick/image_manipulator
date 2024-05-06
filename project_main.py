@@ -33,6 +33,7 @@ class Window(QMainWindow):
         #Uncomment if you want to load an image at startup
         # self.load_image()
         #
+        self.open_image_button()
         self.add_load_image_to_menu()
         self.create_zoom_buttons()
 
@@ -144,6 +145,8 @@ class Window(QMainWindow):
         self.dict_of_toolbar_options["Zoom In"] = self.zoom_in
         self.dict_of_toolbar_options["Zoom Out"] = self.zoom_out
 
+    def open_image_button(self):
+        self.dict_of_toolbar_options["Open image"] = self.load_image
 
 if __name__ == "__main__":
     app = QApplication([])
