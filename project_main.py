@@ -28,7 +28,7 @@ class Window(QMainWindow):
 
         self.load_image()
         self.add_load_image_to_menu()
-        self.display_image()
+        #$self.display_image()
 
         self.create_menuBar()
 
@@ -38,9 +38,9 @@ class Window(QMainWindow):
         # Create a central widget and set the layout on it
         self.central_widget = QWidget()
         self.central_layout = QVBoxLayout()
-        central_layout.addWidget(self.image_label)
-        central_widget.setLayout(central_layout)
-        self.setCentralWidget(central_widget)
+        self.central_layout.addWidget(self.image_label)
+        self.central_widget.setLayout(self.central_layout)
+        self.setCentralWidget(self.central_widget)
 
     def populate_menu(self):
         menu = self.menuBar().addMenu("&Menu")
@@ -87,6 +87,9 @@ class Window(QMainWindow):
                 self.image_label.resize(pixmap.width(), pixmap.height())
             else:
                 self.image_label.setText("Invalid Image")
+
+    # def display_image(self):
+    #     pass
 
 
 if __name__ == "__main__":
