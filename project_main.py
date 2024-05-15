@@ -261,6 +261,14 @@ class Window(QMainWindow):
         invert_action.triggered.connect(self.apply_invert)
         filter_menu.addAction(invert_action)
 
+        blur_action = QAction("Blur", self)
+        blur_action.triggered.connect(self.apply_blur)
+        filter_menu.addAction(blur_action)
+
+        sharpen_action = QAction("Sharpen", self)
+        sharpen_action.triggered.connect(self.apply_sharpen)
+        filter_menu.addAction(sharpen_action)
+
         self.menuBar().addMenu(filter_menu)
 
 
@@ -282,6 +290,24 @@ class Window(QMainWindow):
             self.pixmap = apply_invert(self.pixmap)
             self.update_image()
             self.update_status("Applied Invert filter")
+
+    def apply_blur(self):
+        """
+        Apply a blur filter to the image.
+        """
+        if self.pixmap:
+            self.pixmap = apply_blur(self.pixmap)
+            self.update_image()
+            self.update_status("Applied Blur filter")
+
+    def apply_sharpen(self):
+        """
+        Apply a sharpen filter to the image.
+        """
+        if self.pixmap:
+            self.pixmap = apply_sharpen(self.pixmap)
+            self.update_image()
+            self.update_status("Applied Sharpen filter")
 
 if __name__ == "__main__":
     app = QApplication([])

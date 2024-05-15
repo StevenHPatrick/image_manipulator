@@ -1,3 +1,5 @@
+import cv2
+import numpy as np
 from PySide6.QtGui import QPixmap, QImage, QColor
 
 
@@ -33,3 +35,51 @@ def apply_invert(pixmap):
             inverted_color = QColor(255 - color.red(), 255 - color.green(), 255 - color.blue())
             image.setPixelColor(x, y, inverted_color)
     return QPixmap.fromImage(image)
+
+
+def apply_blur(pixmap):
+    """
+    Apply a blur filter to the image using OpenCV.
+    """
+    # Convert QPixmap to QImage
+    img = pixmap.toImage().convertToFormat(QImage.Format_RGB888)
+    w, h = img.width(), img.height()
+
+    # Get image data as numpy array
+    ptr = img.bits()
+    arr = np.frombuffer(ptr, np.uint8).reshape((h, w, 3))
+
+    # Apply blur filter using OpenCV
+    blurred_arr = cv2.GaussianBlur(arr, (15, 15), 0)
+
+    # Convert back to QImage
+    qimg = QImage(blurred_arr.data, w, h, 3 * w, QImage.Format_RGB888)
+
+    # Convert QImage back to QPixmap
+    pixmap_blurred = QPixmap.fromImage(qimg)
+
+    return pixmap_blurred
+
+def apply_sharpen(pixmap):
+    """
+    Apply a sharpen filter to the image using OpenCV.
+    """
+    # Convert QPixmap to numpy array
+    img = pixmap.toImage().convertToFormat(QImage.Format_RGB888)
+    w, h = img.width(), img.height()
+    ptr = img.bits()
+    arr = np.frombuffer(ptr, np.uint8).reshape((h, w, 3))
+
+    # Define kernel for sharpening
+    kernel = np.array([[-1, -1, -1],
+                       [-1,  9, -1],
+                       [-1, -1, -1]])
+
+    # Apply sharpen filter using OpenCV
+    sharpened_arr = cv2.filter2D(arr, -1, kernel)
+
+    # Convert back to QPixmap
+    qimg = QImage(sharpened_arr.data, w, h, 3 * w, QImage.Format_RGB888)
+    pixmap_sharpened = QPixmap.fromImage(qimg)
+
+    return pixmap_sharpened
