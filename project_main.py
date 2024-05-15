@@ -12,21 +12,23 @@ class Window(QMainWindow):
 
     def __init__(self):
         super().__init__(parent=None)
-        #This is how to dynamically add more tools. Simply just added the tool name as the key and the function name as the data and it will be added
+        # This is how to dynamically add more tools. Simply just added the tool name as the key and the function name as the data and it will be added
         self.dict_of_menu_options = {}
-        self.dict_of_toolbar_options={}
+        self.dict_of_toolbar_options = {}
         self.pixmap = None
         self.loaded_pixmap = None
+
         self.crop_start = None
         self.crop_end = None
+        self.cropping = False
 
-        #The image goes here
+        # The image goes here
         self.image_label = QLabel("No Image Loaded")
-        #This is for the scaling of an image
+        # This is for the scaling of an image
         self.scale_factor = 1.0
 
         self.setWindowTitle("Basic Image Manipulator")
-        #Uncomment if you want to load an image at startup
+        # Uncomment if you want to load an image at startup
         # self.load_image()
         #
         self.open_image_button()
@@ -34,11 +36,11 @@ class Window(QMainWindow):
         self.create_zoom_buttons()
         self.create_crop_tools()
 
-        #Add new tools must be functions must be added before these functions. These functions create the menus
+        # Add new tools must be functions must be added before these functions. These functions create the menus
         self.createMenuBar()
         self.createToolBar()
 
-        #Can change this to tell you which tool you have selected? Currently does nothing important
+        # Can change this to tell you which tool you have selected? Currently does nothing important
         self.createStatusBar()
 
         # Create a central widget and set the layout on it
@@ -52,8 +54,8 @@ class Window(QMainWindow):
         self.image_label.setMouseTracking(True)
         self.image_label.mousePressEvent = self.start_crop
         self.image_label.mouseMoveEvent = self.drawing_crop
-        self.image_label.mouseReleaseEvent = self.perform_crop    
-        
+        self.image_label.mouseReleaseEvent = self.perform_crop
+
     def createMenuBar(self):
         """
         Loops through the dictionary of menu options and adds them to the main menu.
@@ -79,7 +81,6 @@ class Window(QMainWindow):
         """
         self.status = QStatusBar()
         self.update_status("Hello!")
-        
 
     def update_status(self, message):
         """
@@ -120,7 +121,7 @@ class Window(QMainWindow):
             pixmap = QPixmap(selected_file)
             if not pixmap.isNull():
                 self.pixmap = pixmap
-                self.loaded_pixmap = pixmap.copy() # Saving a copy for reverting
+                self.loaded_pixmap = pixmap.copy()  # Saving a copy for reverting
                 self.update_image()
                 self.update_status("Opened " + selected_file)
             else:
@@ -131,7 +132,7 @@ class Window(QMainWindow):
         This function currently just updates the image based on just the zoom in and out. Can be changed to be more of a general function
         """
         scaled_width = int(self.pixmap.width() * self.scale_factor)
-        #scaled_height = int(self.pixmap.height() * self.scale_factor)
+        # scaled_height = int(self.pixmap.height() * self.scale_factor)
         scaled_pixmap = self.pixmap.scaledToWidth(scaled_width)
         self.image_label.setPixmap(scaled_pixmap)
 
@@ -151,8 +152,6 @@ class Window(QMainWindow):
         self.update_image()
         self.update_status("Zoomed Out")
 
-    
-    
     def create_zoom_buttons(self):
         """
         Adds the zooming functionality to the toolbar
@@ -162,6 +161,11 @@ class Window(QMainWindow):
 
     def open_image_button(self):
         self.dict_of_toolbar_options["Open image"] = self.load_image
+
+    def toggle_crop_mode(self):
+        self.cropping = not self.cropping
+        status_message = "Cropping Mode On" if self.cropping else "Cropping Mode Off"
+        self.update_status(status_message)
 
     def crop_image(self):
         """
@@ -176,7 +180,6 @@ class Window(QMainWindow):
             self.crop_end = None
             self.update_status("Crop applied.")
 
-
     def revert(self):
         """
         Revert to the original image.
@@ -188,12 +191,12 @@ class Window(QMainWindow):
             self.update_status("Changes reverted.")
 
     def start_crop(self, event):
-        if self.pixmap:
+        if self.cropping and self.pixmap:
             self.crop_start = event.pos()
             self.update_status("Crop Started")
 
     def drawing_crop(self, event):
-        if self.pixmap and self.crop_start:
+        if self.cropping and self.pixmap and self.crop_start:
             self.temp_pixmap = self.pixmap.copy()
             painter = QPainter(self.temp_pixmap)
             pen = QPen(QColor(255, 0, 0), 2, Qt.DashLine)
@@ -204,7 +207,7 @@ class Window(QMainWindow):
             self.crop_end = event.pos()
 
     def perform_crop(self, event):
-        if self.pixmap and self.crop_start and self.crop_end:
+        if self.cropping and self.pixmap and self.crop_start and self.crop_end:
             rect = QRect(self.crop_start, self.crop_end)
             cropped_pixmap = self.pixmap.copy(rect)
             self.pixmap = cropped_pixmap
@@ -212,9 +215,10 @@ class Window(QMainWindow):
             self.crop_start = None
             self.crop_end = None
             self.update_status("Crop applied.")
+            self.cropping = False
 
     def create_crop_tools(self):
-        self.create_toolbar_tool("Crop", self.crop_image)
+        self.create_toolbar_tool("Crop", self.toggle_crop_mode)
         self.create_toolbar_tool("Revert", self.revert)
 
 
