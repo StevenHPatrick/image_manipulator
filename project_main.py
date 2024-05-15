@@ -5,8 +5,9 @@ from PySide6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QPushButton, QMenu, QInputDialog
 )
 from PySide6.QtGui import QPixmap, QPainter, QPen, QColor, QAction, QFont
-from PySide6.QtCore import Qt, QRect, QPointF
+from PySide6.QtCore import Qt, QRect, QPointF, QTimer
 from filters import *
+from math import cos, sin
 
 
 class Window(QMainWindow):
@@ -25,6 +26,11 @@ class Window(QMainWindow):
         self.crop_end = None
         self.cropping = False
 
+
+        self.spiral_timer = QTimer()
+        self.spiral_counter = 0
+        self.spiral_effect_enabled = False
+
         # The image goes here
         self.image_label = QLabel("No Image Loaded")
         # This is for the scaling of an image
@@ -36,10 +42,12 @@ class Window(QMainWindow):
         #
         self.open_image_button()
         self.add_load_image_to_menu()
+        self.create_save_image_button()
         self.create_zoom_buttons()
         self.create_crop_tools()
         self.create_add_text_button()
-        self.create_save_image_button()
+        
+        self.create_spiral_toolbar()
 
         # Add new tools must be functions must be added before these functions. These functions create the menus
         self.create_menu_bar()
@@ -353,8 +361,39 @@ class Window(QMainWindow):
             print("An error occurred:", e)
             self.update_status("Failed to add text.")
 
+    def create_spiral_toolbar(self):
+        self.create_toolbar_tool("Spiral", self.apply_spiral_effect)
+    
+    def apply_spiral_effect(self):
+        if not self.spiral_effect_enabled:
+            self.spiral_timer.timeout.connect(self.spiral_image)
+            self.spiral_timer.start(.1)  # Change the delay as needed to control the speed of the effect
+            self.spiral_effect_enabled = True
+            self.update_status("Spiraling")
+        else:
+            self.spiral_timer.stop()
+            self.spiral_effect_enabled = False
+            self.update_status("Not Spiraling")
 
-
+    def spiral_image(self):
+        if self.pixmap:
+            width, height = self.pixmap.width(), self.pixmap.height()
+            spiral_factor = 0.1  # Adjust this value to control the intensity of the spiral effect
+            spiral_image = QPixmap(width, height)
+            spiral_image.fill(Qt.transparent)
+            painter = QPainter(spiral_image)
+            center_x, center_y = width / 2, height / 2
+            for y in range(height):
+                for x in range(width):
+                    angle = (x - center_x + y - center_y) * spiral_factor
+                    new_x = int(center_x + (x - center_x) * cos(angle) - (y - center_y) * sin(angle))
+                    new_y = int(center_y + (x - center_x) * sin(angle) + (y - center_y) * cos(angle))
+                    if 0 <= new_x < width and 0 <= new_y < height:
+                        color = self.pixmap.toImage().pixel(x, y)
+                        painter.setPen(QColor(color))
+                        painter.drawPoint(new_x, new_y)
+            painter.end()
+            self.image_label.setPixmap(spiral_image)
 
 if __name__ == "__main__":
     app = QApplication([])
