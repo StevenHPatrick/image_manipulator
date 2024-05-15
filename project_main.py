@@ -2,10 +2,10 @@ import sys
 
 from PySide6.QtWidgets import (
     QApplication, QLabel, QMainWindow, QWidget, QStatusBar, QToolBar, QFileDialog,
-    QVBoxLayout, QHBoxLayout, QPushButton, QMenu
+    QVBoxLayout, QHBoxLayout, QPushButton, QMenu, QInputDialog
 )
-from PySide6.QtGui import QPixmap, QPainter, QPen, QColor, QAction
-from PySide6.QtCore import Qt, QRect
+from PySide6.QtGui import QPixmap, QPainter, QPen, QColor, QAction, QFont
+from PySide6.QtCore import Qt, QRect, QPointF
 from filters import *
 
 
@@ -13,11 +13,13 @@ class Window(QMainWindow):
 
     def __init__(self):
         super().__init__(parent=None)
-        # This is how to dynamically add more tools. Simply just added the tool name as the key and the function name as the data and it will be added
+        # This is how to dynamically add more tools. Simply just added the tool name as the key
+        # and the function name as the data and it will be added
         self.dict_of_menu_options = {}
         self.dict_of_toolbar_options = {}
         self.pixmap = None
         self.loaded_pixmap = None
+
 
         self.crop_start = None
         self.crop_end = None
@@ -36,15 +38,16 @@ class Window(QMainWindow):
         self.add_load_image_to_menu()
         self.create_zoom_buttons()
         self.create_crop_tools()
+        self.create_add_text_button()
         self.create_save_image_button()
 
         # Add new tools must be functions must be added before these functions. These functions create the menus
-        self.createMenuBar()
+        self.create_menu_bar()
         self.create_filter_menu()
-        self.createToolBar()
+        self.create_tool_bar()
 
         # Tells you which tool is selected / status of the app
-        self.createStatusBar()
+        self.create_status_bar()
 
         # Create a central widget and set the layout on it
         self.central_widget = QWidget()
@@ -53,13 +56,24 @@ class Window(QMainWindow):
         self.central_widget.setLayout(self.central_layout)
         self.setCentralWidget(self.central_widget)
 
+        # Variables to track text position and movement
+        self.text_position = QPointF(0, 0)
+        self.is_text_selected = False
+        self.offset = QPointF()
+
         # Enable mouse tracking for cropping
         self.image_label.setMouseTracking(True)
         self.image_label.mousePressEvent = self.start_crop
         self.image_label.mouseMoveEvent = self.drawing_crop
         self.image_label.mouseReleaseEvent = self.perform_crop
 
-    def createMenuBar(self):
+        # Enable mouse tracking for moving text
+        # self.image_label.mouseDoubleClickEvent = self.select_text
+        # self.image_label.mouseMoveEvent = self.move_text
+        # self.image_label.mouseReleaseEvent = self.release_text
+
+
+    def create_menu_bar(self):
         """
         Loops through the dictionary of menu options and adds them to the main menu.
         """
@@ -68,7 +82,7 @@ class Window(QMainWindow):
         for item, function in self.dict_of_menu_options.items():
             menu.addAction(item, function)
 
-    def createToolBar(self):
+    def create_tool_bar(self):
         """
         Loops through the dictionary of toolbar options and adds them to the toolbar.
         """
@@ -78,7 +92,7 @@ class Window(QMainWindow):
             tools.addAction(item, function)
         self.addToolBar(tools)
 
-    def createStatusBar(self):
+    def create_status_bar(self):
         """
         Creates the status bar
         """
@@ -108,7 +122,7 @@ class Window(QMainWindow):
         """
         Adds load image to the menu
         """
-        self.create_menu_tool("&Load_Image", self.load_image)
+        self.create_menu_tool("&Load Image", self.load_image)
 
     def load_image(self):
         """
@@ -132,7 +146,8 @@ class Window(QMainWindow):
 
     def update_image(self):
         """
-        This function currently just updates the image based on just the zoom in and out. Can be changed to be more of a general function
+        This function currently just updates the image based on just the zoom in and out.
+        Can be changed to be more of a general function
         """
         scaled_width = int(self.pixmap.width() * self.scale_factor)
         # scaled_height = int(self.pixmap.height() * self.scale_factor)
@@ -308,6 +323,34 @@ class Window(QMainWindow):
             self.pixmap = apply_sharpen(self.pixmap)
             self.update_image()
             self.update_status("Applied Sharpen filter")
+
+    def create_add_text_button(self):
+        """
+        Create a button to add text to the image.
+        """
+        self.create_toolbar_tool("Add Text", self.add_text_to_image)
+
+    def add_text_to_image(self):
+        """
+        Open a dialog to add text to the image.
+        """
+        text, ok = QInputDialog.getText(self, "Add Text", "Enter the text:")
+        if ok and text:
+            painter = QPainter(self.pixmap)
+
+            font = QFont("Arial", 20)
+            painter.setFont(font)
+            painter.setPen(QColor(Qt.white))
+            text_rect = painter.boundingRect(self.image_label.geometry(), Qt.AlignCenter, text)
+
+            painter.drawText(text_rect, Qt.AlignCenter, text)
+            painter.end()
+
+            self.update_image()
+            self.update_status("Text added to image.")
+
+
+
 
 if __name__ == "__main__":
     app = QApplication([])
