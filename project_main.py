@@ -193,7 +193,7 @@ class Window(QMainWindow):
 
     def start_crop(self, event):
         if self.cropping and self.pixmap:
-            self.crop_start = event.pos()
+            self.crop_start = event.position().toPoint()
             self.update_status("Crop Started")
 
     def drawing_crop(self, event):
@@ -202,10 +202,10 @@ class Window(QMainWindow):
             painter = QPainter(self.temp_pixmap)
             pen = QPen(QColor(255, 0, 0), 2, Qt.DashLine)
             painter.setPen(pen)
-            rect = QRect(self.crop_start, event.pos())
+            rect = QRect(self.crop_start, event.position().toPoint())
             painter.drawRect(rect)
             self.image_label.setPixmap(self.temp_pixmap)
-            self.crop_end = event.pos()
+            self.crop_end = event.position().toPoint()
 
     def perform_crop(self, event):
         if self.cropping and self.pixmap and self.crop_start and self.crop_end:
