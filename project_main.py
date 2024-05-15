@@ -335,19 +335,23 @@ class Window(QMainWindow):
         Open a dialog to add text to the image.
         """
         text, ok = QInputDialog.getText(self, "Add Text", "Enter the text:")
-        if ok and text:
-            painter = QPainter(self.pixmap)
+        try:
+            if ok and text:
+                painter = QPainter(self.pixmap)
 
-            font = QFont("Arial", 20)
-            painter.setFont(font)
-            painter.setPen(QColor(Qt.white))
-            text_rect = painter.boundingRect(self.image_label.geometry(), Qt.AlignCenter, text)
+                font = QFont("Arial", 20)
+                painter.setFont(font)
+                painter.setPen(QColor(Qt.white))
+                text_rect = painter.boundingRect(self.image_label.geometry(), Qt.AlignCenter, text)
 
-            painter.drawText(text_rect, Qt.AlignCenter, text)
-            painter.end()
+                painter.drawText(text_rect, Qt.AlignCenter, text)
+                painter.end()
 
-            self.update_image()
-            self.update_status("Text added to image.")
+                self.update_image()
+                self.update_status("Text added to image.")
+        except Exception as e:
+            print("An error occurred:", e)
+            self.update_status("Failed to add text.")
 
 
 
