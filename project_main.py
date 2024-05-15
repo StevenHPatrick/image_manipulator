@@ -35,6 +35,7 @@ class Window(QMainWindow):
         self.add_load_image_to_menu()
         self.create_zoom_buttons()
         self.create_crop_tools()
+        self.create_save_image_button()
 
         # Add new tools must be functions must be added before these functions. These functions create the menus
         self.createMenuBar()
@@ -220,6 +221,25 @@ class Window(QMainWindow):
     def create_crop_tools(self):
         self.create_toolbar_tool("Crop", self.toggle_crop_mode)
         self.create_toolbar_tool("Revert", self.revert)
+
+    def save_image(self):
+        """
+        Saves the current image to a file.
+        """
+        if self.pixmap:
+            file_dialog = QFileDialog(self)
+            file_dialog.setAcceptMode(QFileDialog.AcceptSave)
+            file_dialog.setNameFilter("Images (*.png *.jpg *.bmp)")
+            file_dialog.setDefaultSuffix("png")
+            if file_dialog.exec():
+                save_path = file_dialog.selectedFiles()[0]
+                if self.pixmap.save(save_path):
+                    self.update_status(f"Image saved to {save_path}")
+                else:
+                    self.update_status("Failed to save image")
+
+    def create_save_image_button(self):
+        self.create_toolbar_tool("Save image", self.save_image)
 
 
 if __name__ == "__main__":
