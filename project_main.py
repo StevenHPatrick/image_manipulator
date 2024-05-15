@@ -2,10 +2,11 @@ import sys
 
 from PySide6.QtWidgets import (
     QApplication, QLabel, QMainWindow, QWidget, QStatusBar, QToolBar, QFileDialog,
-    QVBoxLayout, QHBoxLayout, QPushButton
+    QVBoxLayout, QHBoxLayout, QPushButton, QMenu
 )
-from PySide6.QtGui import QPixmap, QPainter, QPen, QColor
+from PySide6.QtGui import QPixmap, QPainter, QPen, QColor, QAction
 from PySide6.QtCore import Qt, QRect
+from filters import *
 
 
 class Window(QMainWindow):
@@ -39,9 +40,10 @@ class Window(QMainWindow):
 
         # Add new tools must be functions must be added before these functions. These functions create the menus
         self.createMenuBar()
+        self.create_filter_menu()
         self.createToolBar()
 
-        # Can change this to tell you which tool you have selected? Currently does nothing important
+        # Tells you which tool is selected / status of the app
         self.createStatusBar()
 
         # Create a central widget and set the layout on it
@@ -241,6 +243,45 @@ class Window(QMainWindow):
     def create_save_image_button(self):
         self.create_toolbar_tool("Save image", self.save_image)
 
+    def create_filter_menu(self):
+        """
+        Create a submenu for filters.
+        """
+        filter_menu = QMenu("Filters", self)
+
+        grayscale_action = QAction("Grayscale", self)
+        grayscale_action.triggered.connect(self.apply_grayscale)
+        filter_menu.addAction(grayscale_action)
+
+        sepia_action = QAction("Sepia", self)
+        sepia_action.triggered.connect(self.apply_sepia)
+        filter_menu.addAction(sepia_action)
+
+        invert_action = QAction("Invert", self)
+        invert_action.triggered.connect(self.apply_invert)
+        filter_menu.addAction(invert_action)
+
+        self.menuBar().addMenu(filter_menu)
+
+
+
+    def apply_grayscale(self):
+        if self.pixmap:
+            self.pixmap = apply_grayscale(self.pixmap)
+            self.update_image()
+            self.update_status("Applied Grayscale filter")
+
+    def apply_sepia(self):
+        if self.pixmap:
+            self.pixmap = apply_sepia(self.pixmap)
+            self.update_image()
+            self.update_status("Applied Sepia filter")
+
+    def apply_invert(self):
+        if self.pixmap:
+            self.pixmap = apply_invert(self.pixmap)
+            self.update_image()
+            self.update_status("Applied Invert filter")
 
 if __name__ == "__main__":
     app = QApplication([])
